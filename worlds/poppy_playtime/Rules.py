@@ -23,10 +23,10 @@ def set_rules(world: "PoppyPlaytimeWorld"):
     add_rule(world.multiworld.get_entrance("Ch 1 Lobby -> Ch 1 Huggy Room", player),
              lambda state: state.has("Grabpack Ch 1"))
     add_rule(world.multiworld.get_entrance("Ch 1 Huggy Room -> Ch 1 Power Room", player),
-             lambda state: state.has("Key Ch 1"))
+             lambda state: state.has("Key Ch 1") and state.has("Grabpack Ch 1"))
     add_rule(world.multiworld.get_entrance("Ch 1 Conveyor Belt Room", "Ch 1 Power Room -> Ch 1 Conveyor Belt Room", player),
-             lambda state: state.has("Red Hand Ch 1"))
+             lambda state: state.has("Red Hand Ch 1") and state.has("Key Ch 1") and state.has("Grabpack Ch 1"))
     add_rule(world.multiworld.get_entrance("Ch 1 Conveyor Belt Room -> Ch 1 Catwalks", player),
-             lambda state: state.has("Cat Bee Ch 1"))
+             lambda state: state.has("Cat Bee Ch 1") and state.has("Red Hand Ch 1") and state.has("Key Ch 1") and state.has("Grabpack Ch 1"))
     
     world.multiworld.completion_condition[player] = lambda state: state.has("Victory", player)
