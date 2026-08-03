@@ -22,6 +22,13 @@ def create_itempool(world: "PoppyPlaytimeWorld") -> List[Item]:
             continue
         else:
             itempool.append(create_item(world, chapter))
+
+    
+    for item in poppy_playtime_item.keys():
+        if item == "Victory":
+            continue
+        else:
+            itempool.append(create_item(world, item))
     
     # CHANGE VICTORY LOCATION
     victory = create_item(world, "Victory")
