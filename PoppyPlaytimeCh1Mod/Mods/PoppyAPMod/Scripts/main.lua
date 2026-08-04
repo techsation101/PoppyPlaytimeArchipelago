@@ -15,9 +15,9 @@ function LogEvent(eventName)
 
         file:write(jsonString)
         file:close()
-        print("[IPC Mod] Event Successfully Logged: " .. eventName)
+        print("[AP Mod] Event Successfully Logged: " .. eventName)
     else
-        print("[IPC Mod] ERROR: Failed to write to poppy_events.json")
+        print("[AP Mod] ERROR: Failed to write to poppy_events.json")
     end
 end
 
@@ -27,7 +27,7 @@ end
 -------------------------------------------------------------------
 -- NotifyOnNewObject listens for when VHS_TapeBP objects are processed or interacted with
 NotifyOnNewObject("/Game/Playtime/Blueprints/Items/Tape/VHS_TapeBP.VHS_TapeBP_C", function(tapeActor)
-    print("[IPC Mod] Tape Actor Detected in World: " .. tapeActor:GetFullName())
+    print("[AP Mod] Tape Actor Detected in World: " .. tapeActor:GetFullName())
 end)
 
 -- Hook the interaction or destruction of VHS_TapeBP_C
@@ -39,7 +39,7 @@ RegisterHook("/Script/Engine.Actor:K2_DestroyActor", function(self)
         
         -- Check if the destroyed actor is the VHS Tape
         if fullName:find("VHS_TapeBP") or fullName:find("VHS_Security") then
-            print("[IPC Mod] VHS Tape Picked Up / Destroyed: " .. fullName)
+            print("[AP Mod] VHS Tape Picked Up / Destroyed: " .. fullName)
             LogEvent("Pickup Green Tape First Room Ch 1")
         end
     end
@@ -59,7 +59,7 @@ function PollCommands()
         -- In UE4SS v3+, use GetPlayerController or FindFirstOf
         local pc = UEHelpers.GetPlayerController()
         if pc and pc:IsValid() then
-            print("[IPC Mod] Processing external item commands...")
+            print("[AP Mod] Processing external item commands...")
             -- Item granting logic goes here once event logging is verified
         end
     end
@@ -67,4 +67,4 @@ end
 
 LoopAsync(500, PollCommands)
 
-print("[IPC Mod] Tape tracking script initialized for VHS_TapeBP_C!")
+print("[AP Mod] Tape tracking script initialized for VHS_TapeBP_C!")
