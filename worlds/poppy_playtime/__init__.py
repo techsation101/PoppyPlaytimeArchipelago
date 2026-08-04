@@ -9,6 +9,7 @@ from .Items import create_item, create_itempool, item_table
 from .Options import PoppyPlaytimeOptions
 from .Regions import create_regions
 from .Types import ChapterType, chapter_type_to_name
+from .Rules import set_rules
 
 class PoppyPlaytimeWeb(WebWorld):
     theme = "Party"
@@ -50,7 +51,10 @@ class PoppyPlaytimeWorld(World):
         self.multiworld.itempool += create_itempool(self)
 
     def create_item(self, name: str) -> Item:
-        return create_item(self, name)
+        return create_item(self, name)\
+
+    def set_rules(self):
+        set_rules(self)
     
     def fill_slot_data(self) -> Dict[str, object]:
         slot_data: Dict[str, object] = {
