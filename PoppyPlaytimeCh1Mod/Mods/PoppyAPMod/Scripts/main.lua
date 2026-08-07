@@ -3,7 +3,12 @@ local UEHelpers = require("UEHelpers")
 -------------------------------------------------------------------
 -- 1. FILE LOGGING FUNCTION
 -------------------------------------------------------------------
+local loggedEvents = {}
+
 function LogEvent(eventName)
+    if loggedEvents[eventName] then return end
+    loggedEvents[eventName] = true
+
     local file = io.open("poppy_events.json", "w")
     if file then
         local jsonString = string.format([[
@@ -15,56 +20,79 @@ function LogEvent(eventName)
 
         file:write(jsonString)
         file:close()
-        print("[AP Mod] Event Successfully Logged: " .. eventName)
+        print("[AP Mod] SUCCESS: Event Logged -> " .. eventName)
     else
-        print("[AP Mod] ERROR: Failed to write to poppy_events.json")
+        print("[AP Mod] ERROR: Could not write to poppy_events.json")
     end
 end
 
 -------------------------------------------------------------------
 -- 2. TAPE PICKUP HOOK
--- Runs whenever any VHS_TapeBP actor's interaction is triggered
 -------------------------------------------------------------------
--- NotifyOnNewObject listens for when VHS_TapeBP objects are processed or interacted with
-NotifyOnNewObject("/Game/Playtime/Blueprints/Items/Tape/VHS_TapeBP.VHS_TapeBP_C", function(tapeActor)
-    print("[AP Mod] Tape Actor Detected in World: " .. tapeActor:GetFullName())
-end)
-
--- Hook the interaction or destruction of VHS_TapeBP_C
--- When picked up, the tape is destroyed/hidden by the game
 RegisterHook("/Script/Engine.Actor:K2_DestroyActor", function(self)
     local actor = self:get()
     if actor and actor:IsValid() then
         local fullName = actor:GetFullName()
-        
-        -- Check if the destroyed actor is the VHS Tape
         if fullName:find("VHS_TapeBP") or fullName:find("VHS_Security") then
-            print("[AP Mod] VHS Tape Picked Up / Destroyed: " .. fullName)
+            print("[AP Mod] Tape Picked Up: " .. fullName)
             LogEvent("Pickup Green Tape First Room Ch 1")
         end
     end
 end)
 
 -------------------------------------------------------------------
--- 3. INBOUND COMMAND POLLING (0.5s Loop)
+-- 3. NATIVE ENGINE COMPONENT HOOKS (Zero Path Errors)
 -------------------------------------------------------------------
-function PollCommands()
-    local file = io.open("poppy_commands.json", "r")
-    if not file then return end
 
-    local content = file:read("*a")
-    file:close()
+-- Hook 1: Detect when any component on VHSPlayerBP7 changes visibility
+RegisterHook("/Script/Engine.SceneComponent:SetVisibility", function(self, bNewVisibility)
+    local comp = self:get()
+    if not comp or not comp:IsValid() then return end
 
-    if content:find('"processed"%s*:%s*false') then
-        -- In UE4SS v3+, use GetPlayerController or FindFirstOf
-        local pc = UEHelpers.GetPlayerController()
-        if pc and pc:IsValid() then
-            print("[AP Mod] Processing external item commands...")
-            -- Item granting logic goes here once event logging is verified
+    pcall(function()
+        local owner = comp:GetOwner()
+        if owner and owner:IsValid() then
+            local ownerName = owner:GetFullName()
+            if ownerName:find("VHSPlayerBP7") or ownerName:find("entrance") then
+                print("[AP Mod] SetVisibility triggered on Entrance VCR!")
+                LogEvent("Listen to Green Tape First Room Ch 1")
+            end
         end
-    end
-end
+    end)
+end)
 
-LoopAsync(500, PollCommands)
+-- Hook 2: Detect when a component's hidden state is toggled
+RegisterHook("/Script/Engine.SceneComponent:SetHiddenInGame", function(self, NewHidden)
+    local comp = self:get()
+    if not comp or not comp:IsValid() then return end
 
-print("[AP Mod] Tape tracking script initialized for VHS_TapeBP_C!")
+    pcall(function()
+        local owner = comp:GetOwner()
+        if owner and owner:IsValid() then
+            local ownerName = owner:GetFullName()
+            if ownerName:find("VHSPlayerBP7") or ownerName:find("entrance") then
+                print("[AP Mod] SetHiddenInGame triggered on Entrance VCR!")
+                LogEvent("Listen to Green Tape First Room Ch 1")
+            end
+        end
+    end)
+end)
+
+-- Hook 3: Detect when playback/animation components activate
+RegisterHook("/Script/Engine.ActorComponent:Activate", function(self, bReset)
+    local comp = self:get()
+    if not comp or not comp:IsValid() then return end
+
+    pcall(function()
+        local owner = comp:GetOwner()
+        if owner and owner:IsValid() then
+            local ownerName = owner:GetFullName()
+            if ownerName:find("VHSPlayerBP7") or ownerName:find("entrance") then
+                print("[AP Mod] Component Activated on Entrance VCR!")
+                LogEvent("Listen to Green Tape First Room Ch 1")
+            end
+        end
+    end)
+end)
+
+print("[AP Mod] Native Engine Component Hooks Loaded Successfully!")
